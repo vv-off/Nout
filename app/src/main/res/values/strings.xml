@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Note</string>
+    <string name="add_button_text">Добавить</string>
+    <string name="open_item_text">Открыть</string>
+    <string name="clone_item_text">Клонировать</string>
+    <string name="delete_item_text">Удалить</string>
+    <string name="cansel_item_text">Отмена</string>
+    <string name="activity_label">Блокнот</string>
+</resources>

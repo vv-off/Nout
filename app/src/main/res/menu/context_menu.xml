@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <item android:id="@+id/open_item"
+            android:title="@string/open_item_text" />
+
+        <item android:id="@+id/clone_item"
+            android:title="@string/clone_item_text"/>
+
+        <item android:id="@+id/delete_item"
+            android:title="@string/delete_item_text" />
+
+        <item android:id="@+id/cansel_item"
+            android:title="@string/cansel_item_text" />
+</menu>
