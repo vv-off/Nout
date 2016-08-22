@@ -6,12 +6,12 @@ public class Message {
     private String message;
     private String date;
 
-    Message(String message, String date){
+    Message(String message, String date) {
         this.message = message;
         this.date = date;
     }
 
-    Message(int id, String message, String date){
+    Message(int id, String message, String date) {
         this.id = id;
         this.message = message;
         this.date = date;

@@ -11,18 +11,18 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    ListView listView;
-    Button mAddButton;
-    ArrayList<Message> messageArrayList = new ArrayList<>();
-    ArrayList<HashMap<String, String>> myArrList = new ArrayList<HashMap<String, String>>();
-    HashMap<String, String> map;
+    private ListView listView;
+    private DBHandler dbHandler = new DBHandler(this);
+    private Button mAddButton;
+
+    private ArrayList<HashMap<String, String>> myArrList = new ArrayList<HashMap<String, String>>();
+    private HashMap<String, String> map;
     private int postionElement;
 
     @Override
@@ -30,23 +30,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ///// пока заполняем вручну
-        //// в дальнейшем будет использоваться БД
-        for(int i=0;i<20;i++) {
-            messageArrayList.add(i, new Message(i,"Запись " + i,"01.01.2016"));
-        }
-        ///////////
-        for(int i=0;i<messageArrayList.size();i++) {
-            map = new HashMap<String, String>();
-            map.put("Message", messageArrayList.get(i).getMessage());
-            map.put("Date", messageArrayList.get(i).getDate());
-            myArrList.add(map);
-        }
-
-        listView = (ListView)findViewById(R.id.list_view);
-        mAddButton = (Button)findViewById(R.id.add_button);
+        listView = (ListView) findViewById(R.id.list_view);
+        mAddButton = (Button) findViewById(R.id.add_button);
         mAddButton.setOnClickListener(this);
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -54,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //запуск activity редактирования выбранного пункта
                 postionElement = position;
                 startIntentEdit(postionElement);
-
             }
         });
 
@@ -66,17 +51,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        SimpleAdapter adapter = new SimpleAdapter(this, myArrList, R.layout.list_view_main,
-                new String[] {"Message", "Date"},
-                new int[] {R.id.lv_message, R.id.lv_date});
-        listView.setAdapter(adapter);
-
         registerForContextMenu(listView);
     }
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(MainActivity.this,AddActivity.class);
+        Intent intent = new Intent(MainActivity.this, AddActivity.class);
         startActivity(intent);
     }
 
@@ -84,24 +64,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.context_menu,menu);
+        inflater.inflate(R.menu.context_menu, menu);
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         int pos;
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.delete_item:
-
                 //Зписываем позицию выбранного пункта ListView
-                int id = messageArrayList.get(postionElement).getId();
-                String message = messageArrayList.get(postionElement).getMessage();
-                //После убрать Toast и добавить код удаления из БД
-                String messageToast = "Удаляется соббщение - " + message + " - " + id + "!";
-                Toast.makeText(getApplicationContext(),messageToast,Toast.LENGTH_SHORT).show();
+                int id = dbHandler.getAllMessageDB().get(postionElement).getId();
+                dbHandler.delMessageDB(id);
+                fillingListView();
                 break;
             case R.id.open_item:
                 startIntentEdit(postionElement);
+                break;
+            case R.id.clone_item:
+                String cloneMessage = dbHandler.getAllMessageDB().get(postionElement).getMessage();
+                String cloneDate = MainDate.getDate();
+                dbHandler.addMessageDB(cloneMessage, cloneDate);
+                fillingListView();
                 break;
             default:
                 return super.onContextItemSelected(item);
@@ -114,10 +97,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.finishAffinity();
     }
 
-    public void startIntentEdit(int position){
+    @Override
+    public void onResume() {
+        super.onResume();
+        fillingListView();
+    }
+
+    public void fillingListView() {
+        myArrList.clear();
+        for (int i = 0; i < dbHandler.getAllMessageDB().size(); i++) {
+            map = new HashMap<String, String>();
+            map.put("Message", dbHandler.getAllMessageDB().get(i).getMessage());
+            map.put("Date", dbHandler.getAllMessageDB().get(i).getDate());
+            myArrList.add(map);
+
+            SimpleAdapter adapter = new SimpleAdapter(this, myArrList, R.layout.list_view_main,
+                    new String[]{"Message", "Date"},
+                    new int[]{R.id.lv_message, R.id.lv_date});
+            listView.setAdapter(adapter);
+        }
+    }
+
+    public void startIntentEdit(int position) {
         Intent intent = new Intent(MainActivity.this, EditActivity.class);
-        intent.putExtra(EditActivity.KEY_ID,messageArrayList.get(position).getId());
-        intent.putExtra(EditActivity.KEY_MESSAGE,messageArrayList.get(position).getMessage());
+        intent.putExtra(EditActivity.KEY_ID, dbHandler.getAllMessageDB().get(position).getId());
+        intent.putExtra(EditActivity.KEY_MESSAGE, dbHandler.getAllMessageDB().get(position).getMessage());
         startActivity(intent);
     }
 }

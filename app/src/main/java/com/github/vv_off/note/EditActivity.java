@@ -8,12 +8,14 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.EditText;
 
-public class EditActivity extends AppCompatActivity{
+public class EditActivity extends AppCompatActivity {
 
     public static final String KEY_ID = "id";
     public static final String KEY_MESSAGE = "message";
 
-    EditText mEditTextView;
+    private EditText mEditTextEdit;
+    private DBHandler dbHandler = new DBHandler(this);
+    int mID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,17 +27,17 @@ public class EditActivity extends AppCompatActivity{
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        mEditTextView = (EditText)findViewById(R.id.edit_text_edit);
+        mEditTextEdit = (EditText) findViewById(R.id.edit_text_edit);
 
-        int id = getIntent().getIntExtra(KEY_ID, 0);
+        mID = getIntent().getIntExtra(KEY_ID, 0);
         String message = getIntent().getStringExtra(KEY_MESSAGE).toString();
 
-        mEditTextView.setText(message + " - " + id);
+        mEditTextEdit.setText(message);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 Intent intent = new Intent(EditActivity.this, MainActivity.class);
                 startActivity(intent);
@@ -44,4 +46,15 @@ public class EditActivity extends AppCompatActivity{
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (!mEditTextEdit.getText().toString().equals("")) {
+            String date = MainDate.getDate();
+            dbHandler.updateMessageDB(mID, mEditTextEdit.getText().toString(), date);
+        }
+    }
+
+
 }
